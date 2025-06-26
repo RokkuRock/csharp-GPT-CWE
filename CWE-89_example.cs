@@ -1,24 +1,20 @@
-// File: SqlInject.cs
+// File: SqlInjection.cs
 using System;
-using Microsoft.Data.Sqlite;
+using System.Data.SqlClient;
 
-class SqlInject {
-    static void Main(){
-        var conn = new SqliteConnection("Data Source=:memory:");
+class SqlInjection {
+    static void Main() {
+        var conn = new SqlConnection("Data Source=(local);Initial Catalog=TestDb;Integrated Security=true");
         conn.Open();
-        conn.CreateCommand().CommandText =
-            "CREATE TABLE users(u TEXT, p TEXT); INSERT INTO users VALUES('admin','secret');";
-        conn.ExecuteNonQuery();
-
-        Console.Write("User: ");
-        var u = Console.ReadLine();
-        Console.Write("Pass: ");
-        var p = Console.ReadLine();
-
-        string q = $"SELECT COUNT(*) FROM users WHERE u='{u}' AND p='{p}';"; // CWE-89
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = q;
-        var cnt = Convert.ToInt32(cmd.ExecuteScalar());
-        Console.WriteLine(cnt > 0 ? "OK" : "Fail");
+        Console.Write("Username: ");
+        string u = Console.ReadLine();
+        Console.Write("Password: ");
+        string p = Console.ReadLine();
+        // CWE-89: 直接串接 u 和 p
+        string q = $"SELECT COUNT(*) FROM Users WHERE Username='{u}' AND Password='{p}'";
+        using var cmd = new SqlCommand(q, conn);
+        int count = (int)cmd.ExecuteScalar();
+        Console.WriteLine(count > 0 ? "Welcome" : "Access Denied");
+        conn.Close();
     }
 }
