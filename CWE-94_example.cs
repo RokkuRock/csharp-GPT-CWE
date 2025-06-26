@@ -1,24 +1,25 @@
-// File: CodeInject.cs
+// File: CodeInjection.cs
 using System;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 
-class CodeInject {
-    static void Main(){
-        Console.Write("Enter method body, e.g. return 1+2; : ");
-        var body = Console.ReadLine();
+class CodeInjection {
+    static void Main() {
+        Console.Write("Enter C# expression (e.g. return 1+2;): ");
+        string body = Console.ReadLine();
         string src = @"
 using System;
 public class D {
-  public int Run(){ " + body + @" }
+  public int Run() { " + body + @" }
 }";
         var cp = new CompilerParameters { GenerateInMemory = true };
-        var res = new CSharpCodeProvider().CompileAssemblyFromSource(cp, src);
-        if (res.Errors.Count > 0){
-            Console.WriteLine("Compile error");
+        var prov = new CSharpCodeProvider();
+        var res = prov.CompileAssemblyFromSource(cp, src);
+        if (res.Errors.HasErrors) {
+            Console.WriteLine("Compile errors");
         } else {
-            var inst = res.CompiledAssembly.CreateInstance("D");
-            Console.WriteLine(inst.GetType().GetMethod("Run").Invoke(inst,null));
+            dynamic inst = res.CompiledAssembly.CreateInstance("D");
+            Console.WriteLine("Result: " + inst.Run());
         }
     }
 }
