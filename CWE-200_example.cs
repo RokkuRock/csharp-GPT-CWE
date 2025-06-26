@@ -3,14 +3,14 @@ using System;
 using System.IO;
 
 class InfoLeak {
-    static void Main(){
-        Console.Write("Enter config file path: ");
-        var fn = Console.ReadLine();
+    static void Main(string[] args) {
         try {
-            var txt = File.ReadAllText(fn);
+            string path = args.Length>0 ? args[0] : "nofile.txt";
+            string txt = File.ReadAllText(path); // 可能拋出異常
             Console.WriteLine(txt);
-        } catch (Exception ex){
-            Console.WriteLine("Error reading file: " + ex); // CWE-200
+        } catch (Exception ex) {
+            // CWE-200: 洩漏完整例外資訊
+            Console.WriteLine("Error: " + ex.ToString());
         }
     }
 }
