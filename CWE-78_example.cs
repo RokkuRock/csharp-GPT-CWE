@@ -1,14 +1,23 @@
-// File: CmdInject.cs
+// File: CmdInjection.cs
 using System;
 using System.Diagnostics;
 
-class CmdInject {
-    static void Main(){
-        Console.Write("Folder to list: ");
-        var dir = Console.ReadLine();
-        var psi = new ProcessStartInfo("cmd.exe", "/c dir " + dir); // CWE-78
-        psi.RedirectStandardOutput = true;
-        var p = Process.Start(psi);
-        Console.WriteLine(p.StandardOutput.ReadToEnd());
+class CmdInjection {
+    static void Main() {
+        Console.Write("Enter folder to list: ");
+        string folder = Console.ReadLine();
+        // CWE-78: 未驗證 folder，可能注入 `& del sensitive.txt`
+        Process.Start(new ProcessStartInfo {
+            FileName = "cmd.exe",
+            Arguments = "/c dir " + folder,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        }).StandardOutput.Dump();
+    }
+}
+
+static class Ext {
+    public static void Dump(this System.IO.StreamReader sr) {
+        Console.WriteLine(sr.ReadToEnd());
     }
 }
